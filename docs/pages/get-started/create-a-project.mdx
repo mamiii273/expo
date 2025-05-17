@@ -1,24 +1,76 @@
----
-title: Create a project
-description: Learn how to create a new Expo project.
-hideTOC: true
----
+import React, { useState } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 
-import { Terminal } from '~/ui/components/Snippet';
+export default function App() {
+  const [secretNumber, setSecretNumber] = useState(generateNumber());
+  const [guess, setGuess] = useState('');
+  const [tries, setTries] = useState(0);
 
-System requirements:
+  function generateNumber() {
+    return Math.floor(Math.random() * 100) + 1;
+  }
 
-- [Node.js (LTS)](https://nodejs.org/en/).
-- macOS, Windows (Powershell and [WSL 2](https://expo.fyi/wsl)), and Linux are supported.
+  function handleGuess() {
+    const num = parseInt(guess);
+    if (isNaN(num) || num < 1 || num > 100) {
+      Alert.alert('Geçersiz giriş', '1 ile 100 arasında bir sayı giriniz.');
+      return;
+    }
 
-We recommend starting with the default project created by `create-expo-app`. The default project includes example code to help you get started.
+    setTries(tries + 1);
 
-To create a new project, run the following command:
+    if (num === secretNumber) {
+      Alert.alert(
+        'Tebrikler!',
+        `Doğru bildin! ${tries + 1} denemede buldun.`,
+        [{ text: 'Yeni Oyun', onPress: resetGame }]
+      );
+    } else if (num < secretNumber) {
+      Alert.alert('Yukarı', 'Daha yüksek bir sayı deneyin.');
+    } else {
+      Alert.alert('Aşağı', 'Daha düşük bir sayı deneyin.');
+    }
+    setGuess('');
+  }
 
-<Terminal cmd={['$ npx create-expo-app@latest']} />
+  function resetGame() {
+    setSecretNumber(generateNumber());
+    setTries(0);
+    setGuess('');
+  }
 
-> You can choose a different template by adding the [`--template` option](/more/create-expo/#--template).
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Sayı Tahmin Oyunu</Text>
+      <Text style={styles.instructions}>1 ile 100 arasında bir sayı tahmin edin</Text>
+      <TextInput
+        style={styles.input}
+        keyboardType="number-pad"
+        placeholder="Tahmininizi girin"
+        value={guess}
+        onChangeText={setGuess}
+      />
+      <Button title="Tahmin Et" onPress={handleGuess} />
+      <Text style={styles.tries}>Deneme sayısı: {tries}</Text>
+      <Button title="Yeni Oyun" onPress={resetGame} color="#ff5c5c" />
+    </View>
+  );
+}
 
-## Next step
-
-You have a project. Now it's time to set up your development environment so that you can start developing.
+const styles = StyleSheet.create({
+  container: { flex:1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: '#f7f7f7' },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 10 },
+  instructions: { fontSize: 16, marginBottom: 20 },
+  input: {
+    height: 50,
+    width: '80%',
+    borderColor: '#888',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+    fontSize: 18,
+    backgroundColor: '#fff',
+  },
+  tries: { marginTop: 20, fontSize: 16 }
+});
